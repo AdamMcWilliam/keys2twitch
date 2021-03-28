@@ -9,7 +9,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-sg.Window(title="keyboardDisplay", layout=[[]], margins=(500, 200)).read()
+
+layout = [[sg.Text("Press a key or scroll mouse")],
+          [sg.Text("", size=(18, 1), key='text')],
+          [sg.Button("OK", key='OK')],
+          [sg.Button("START", key='START')]
+          ]
+
+window = sg.Window("Keyboard Test", layout,
+                   return_keyboard_events=True, use_default_focus=False, margins=(500, 200))
+
 
 
 def missing_env_var(var_name):
@@ -89,6 +98,7 @@ def process_msg(irc_response):
         print(f"We want to run command {msg}")
     else:
         print(f"{user}: {msg}")
+        text_elem.update(f"{user}: {msg}")
 
 
 # TODO: refactor this sillyness
@@ -115,9 +125,7 @@ def run_bot(server):
 
 
 if __name__ == "__main__":
-    server = _connect_to_twitch()
-    send_message(server, "Hello")
-
+    
     def on_press(key):
         print("Key pressed: {0}".format(key))
         if "{0}".format(key) == "Key.home":
@@ -130,9 +138,33 @@ if __name__ == "__main__":
         print("Key released: {0}".format(key))
     
 
-    with Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
+    # Create an event loop
+    while True:
+        event, values = window.read()
+        text_elem = window['text']
 
+        
+        #with Listener(on_press=on_press, on_release=on_release) as listener:
+        #    listener.join()
 
+        # End program if user closes window or
+        # presses the Exit button
+        if event in ("OK", None):
+            print(event, "exiting")
+            break
 
-    run_bot(server)
+        if event in ("START", None):
+            print("Starting Server")
+            server = _connect_to_twitch()
+            run_bot(server)
+            send_message(server, "Test")
+        
+
+        if len(event) == 1:
+            text_elem.update(value='%s - %s' % (event, ord(event)))
+
+        if event is not None:
+            text_elem.update(event)
+
+    window.close()
+    
