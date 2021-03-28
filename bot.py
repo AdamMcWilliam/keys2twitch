@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-#sg.Window(title="keyboardDisplay", layout=[[]], margins=(500, 200)).read()
+sg.Window(title="keyboardDisplay", layout=[[]], margins=(500, 200)).read()
 
 
 def missing_env_var(var_name):
